@@ -1,0 +1,330 @@
+Sub histograma()
+
+    Dim Media1 As Double
+
+    colunas_histograma = Conta_colunas
+    Preenche_histograma (colunas_histograma)
+    formata_histograma (colunas_histograma)
+    Quartil_1 (colunas_histograma)
+    Quartil_2 (colunas_histograma)
+    Quartil_3 (colunas_histograma)
+    Decil (colunas_histograma)
+    Percentil (colunas_histograma)
+    Media1 = Calculo_Media(colunas_histograma)
+    Media1 = Desv_med(colunas_histograma, Media1)
+    Media1 = Curtose()
+
+End Sub
+
+Public Function Conta_colunas()
+
+    i = 5
+    colunas_histograma = 0
+    
+    Do While (Worksheets("Dados").Cells(i, 3).Value <> "")
+        i = i + 1
+        colunas_histograma = colunas_histograma + 1
+    Loop
+
+    Conta_colunas = colunas_histograma
+
+    'MsgBox (colunas_histograma)
+
+End Function
+
+Public Function formata_histograma(colunas_histograma)
+
+    i = 1
+    Dim tmp As String
+    Dim tmp_row As String
+    tmp_row = "C" & (colunas_histograma + 5)
+    tmp = "E" & (colunas_histograma + 5)
+    Worksheets("Histograma").Range("C6:E50").Interior.ColorIndex = 0
+
+    With Worksheets("Histograma").Range("C6:E50").Borders()  'Limpa as bordas das tabelas anteriores
+        .LineStyle = xlNone
+    End With
+    
+    With Worksheets("Histograma").Range("C6:" & tmp).Borders()
+        .LineStyle = xlContinuous
+        .Weight = xlThin
+        .ColorIndex = 1
+    End With
+    
+    With Worksheets("Histograma").Range("C6:" & tmp_row).Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .Weight = xlMedium
+        .ColorIndex = 1
+    End With
+       
+    With Worksheets("Histograma").Range("E6:" & tmp).Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .Weight = xlMedium
+        .ColorIndex = 1
+    End With
+       
+    tmp_row = "C" & (colunas_histograma + 6)
+    tmp = "E" & (colunas_histograma + 6)
+       
+    With Worksheets("Histograma").Range(tmp_row & ":" & tmp).Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .Weight = xlMedium
+        .ColorIndex = 1
+    End With
+    
+    With Worksheets("Histograma").Range("C5:E5").Borders()
+        .LineStyle = xlContinuous
+        .Weight = xlMedium
+        .ColorIndex = 1
+    End With
+    
+    Do While (i <= colunas_histograma)
+    
+    tmp_row = "C" & (5 + i)
+    tmp = "E" & (i + 5)
+    
+    If (i Mod 2) Then
+    Worksheets("Histograma").Range(tmp_row & ":" & tmp).Interior.ColorIndex = 15
+    Else
+    Worksheets("Histograma").Range(tmp_row & ":" & tmp).Interior.ColorIndex = 24
+    End If
+
+    i = i + 1
+    
+    Loop
+    
+End Function
+
+Public Function Preenche_histograma(colunas_histograma)
+
+    i = 1
+    Worksheets("Histograma").Range("C6:E40").Value = "" 'Zerando os valores do histograma
+    Worksheets("Histograma").Range("E6").Value = Worksheets("Dados").Range("E5").Value
+        
+
+    Do While (i <= colunas_histograma)
+
+        Worksheets("Histograma").Cells((i + 5), 3).Value = Worksheets("Dados").Cells((i + 4), 3).Value & " |- " & Worksheets("Dados").Cells((i + 4), 4).Value
+        Worksheets("Histograma").Cells((i + 5), 4).Value = Worksheets("Dados").Cells((i + 4), 5).Value
+        
+        If (i < colunas_histograma) Then
+            Worksheets("Histograma").Cells((i + 6), 5).Value = (Worksheets("Dados").Cells((i + 5), 5).Value + Worksheets("Histograma").Cells((i + 5), 5).Value)
+        End If 'Preenchendo a coluna "F"
+        
+        i = i + 1
+        
+    Loop
+
+End Function
+
+Public Function Quartil_1(colunas_histograma)
+
+    i = 1
+    q1 = Worksheets("Histograma").Cells((colunas_histograma + 5), 5).Value / 4 'Valor total divido por 4
+
+    Do While (i <= colunas_histograma)
+        If (Worksheets("Histograma").Cells((i + 5), 5).Value > q1) Then
+            Exit Do
+        End If
+        i = i + 1 'linha onde está o q1
+    Loop
+    
+    If (i <> 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        dif_f = q1 - Worksheets("Histograma").Cells((i + 4), 5).Value
+        Worksheets("Histograma").Range("I6").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * dif_f
+    End If
+    
+    If (i = 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        Worksheets("Histograma").Range("I6").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * q1
+    End If
+
+End Function
+
+Public Function Quartil_2(colunas_histograma)
+
+    i = 1
+    q2 = Worksheets("Histograma").Cells((colunas_histograma + 5), 5).Value / 2 'Valor total divido por 2
+
+    Do While (i <= colunas_histograma)
+        If (Worksheets("Histograma").Cells((i + 5), 5).Value > q2) Then
+            Exit Do
+        End If
+        i = i + 1 'linha onde está o q2
+    Loop
+    
+    If (i <> 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        dif_f = q2 - Worksheets("Histograma").Cells((i + 4), 5).Value
+        Worksheets("Histograma").Range("I7").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * dif_f
+    End If
+    
+    If (i = 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        Worksheets("Histograma").Range("I7").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * q2
+    End If
+
+End Function
+
+Public Function Quartil_3(colunas_histograma)
+
+    i = 1
+    q3 = (Worksheets("Histograma").Cells((colunas_histograma + 5), 5).Value / 4) * 3
+
+    Do While (i <= colunas_histograma)
+        If (Worksheets("Histograma").Cells((i + 5), 5).Value > q3) Then
+            Exit Do
+        End If
+        i = i + 1 'linha onde está o q2
+    Loop
+    
+    If (i <> 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        dif_f = q3 - Worksheets("Histograma").Cells((i + 4), 5).Value
+        Worksheets("Histograma").Range("I8").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * dif_f
+    End If
+    
+    If (i = 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        Worksheets("Histograma").Range("I8").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * q3
+    End If
+
+End Function
+
+Public Function Calculo_Media(colunas_histograma)
+    
+    Dim numbers() As Double, sum As Double, i As Integer, sum1 As Double, Media As Double
+    ReDim numbers(colunas_histograma)
+    sum = 0
+    sum1 = 0
+    Media = 0
+    
+    For i = 0 To colunas_histograma - 1
+        numbers(i) = (Worksheets("Dados").Cells((i + 5), 3).Value + Worksheets("Dados").Cells((i + 5), 4).Value) / 2    'xmi
+        sum = sum + (numbers(i) * Worksheets("Dados").Cells((i + 5), 5).Value)
+        sum1 = sum1 + Worksheets("Dados").Cells((i + 5), 5).Value
+    Next i
+    
+    Media = sum / sum1
+    Worksheets("Histograma").Range("I9").Value = Media
+    
+    Calculo_Media = Media
+
+End Function
+
+Public Function Desv_med(colunas_histograma, Media1)
+
+    Dim numbers() As Double, sum As Double, i As Integer, desvio As Double, sum1 As Double, sum2 As Double, variancia As Double, desv_padrao As Double, variacao As Double, pearson As Double
+
+    ReDim numbers(colunas_histograma)
+    sum = 0
+    sum1 = 0
+    sum2 = 0
+    
+    For i = 0 To colunas_histograma - 1
+        numbers(i) = (Worksheets("Dados").Cells((i + 5), 3).Value + Worksheets("Dados").Cells((i + 5), 4).Value) / 2 'xmi
+        sum = sum + Abs((numbers(i) - Media1) * Worksheets("Dados").Cells((i + 5), 5).Value) 'soma de todos os termos |(xmi - media) * ni|
+        sum2 = sum2 + Abs(((numbers(i) - Media1) ^ 2) * Worksheets("Dados").Cells((i + 5), 5).Value) 'soma de todos os termos |(xmi - media) * ni|
+        sum1 = sum1 + Worksheets("Dados").Cells((i + 5), 5).Value
+    Next i
+    
+    desvio = sum / sum1
+    variancia = sum2 / (sum1 - 1)
+    desv_padrao = variancia ^ (1 / 2)
+    variacao = desv_padrao / Media1
+    pearson = 3 * (Media1 - Worksheets("Histograma").Range("I7").Value) / desv_padrao
+       
+    Worksheets("Histograma").Range("I10").Value = desvio
+    Worksheets("Histograma").Range("I11").Value = variancia
+    Worksheets("Histograma").Range("I12").Value = desv_padrao
+    Worksheets("Histograma").Range("I13").Value = variacao
+    Worksheets("Histograma").Range("I14").Value = pearson
+    
+    
+End Function
+
+Public Function Decil(colunas_histograma)
+
+    i = 1
+    q3 = (Worksheets("Histograma").Cells((colunas_histograma + 5), 5).Value / 10) * Worksheets("Histograma").Range("K6").Value
+
+    Do While (i <= colunas_histograma)
+        If (Worksheets("Histograma").Cells((i + 5), 5).Value > q3) Then
+            Exit Do
+        End If
+        i = i + 1
+    Loop
+    
+    If (i <> 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        dif_f = q3 - Worksheets("Histograma").Cells((i + 4), 5).Value
+        Worksheets("Histograma").Range("L6").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * dif_f
+    End If
+    
+    If (i = 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        Worksheets("Histograma").Range("L6").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * q3
+    End If
+
+End Function
+
+Public Function Percentil(colunas_histograma)
+
+    i = 1
+    q3 = (Worksheets("Histograma").Cells((colunas_histograma + 5), 5).Value / 100) * Worksheets("Histograma").Range("K7").Value
+
+    Do While (i <= colunas_histograma)
+        If (Worksheets("Histograma").Cells((i + 5), 5).Value > q3) Then
+            Exit Do
+        End If
+        i = i + 1
+    Loop
+    
+    If (i <> 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        dif_f = q3 - Worksheets("Histograma").Cells((i + 4), 5).Value
+        Worksheets("Histograma").Range("L7").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * dif_f
+    End If
+    
+    If (i = 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        Worksheets("Histograma").Range("L7").Value = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * q3
+    End If
+
+End Function
+
+Public Function Percentil_calc(colunas_histograma, n)
+
+    i = 1
+    q3 = (Worksheets("Histograma").Cells((colunas_histograma + 5), 5).Value / 100) * n
+
+    Do While (i <= colunas_histograma)
+        If (Worksheets("Histograma").Cells((i + 5), 5).Value > q3) Then
+            Exit Do
+        End If
+        i = i + 1
+    Loop
+    
+    If (i <> 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        dif_f = q3 - Worksheets("Histograma").Cells((i + 4), 5).Value
+        Percentil_calc = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * dif_f
+    End If
+    
+    If (i = 1) Then
+        Gap = Worksheets("Dados").Cells((i + 4), 4).Value - Worksheets("Dados").Cells((i + 4), 3).Value
+        Percentil_calc = Worksheets("Dados").Cells((i + 4), 3).Value + (Gap / Worksheets("Histograma").Cells((i + 5), 4).Value) * q3
+    End If
+
+End Function
+
+Public Function Curtose()
+    Dim q1 As Double, q3 As Double, p10 As Double, p90 As Double, C As Double
+    q1 = Worksheets("Histograma").Range("I6").Value
+    q3 = Worksheets("Histograma").Range("I8").Value
+    p10 = Percentil_calc(Conta_colunas(), 10)
+    p90 = Percentil_calc(Conta_colunas(), 90)
+    C = (q3 - q1) / (2 * (p90 - p10))
+    Worksheets("Histograma").Range("I15").Value = C
+End Function
